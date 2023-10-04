@@ -82,7 +82,7 @@ export class RedocModule {
 					href: options?.logo?.href || `/${path}`,
 				},
 			}),
-			'x-apiGroups': options?.tagGroups || [],
+			'x-tagGroups': options?.tagGroups || [],
 		}) as any;
 	}
 
