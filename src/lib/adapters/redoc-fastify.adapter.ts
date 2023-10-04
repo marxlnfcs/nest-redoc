@@ -8,6 +8,7 @@ export class RedocFastifyAdapter {
 		private app: NestFastifyApplication,
 		private document: RedocDocument,
 		private options: RedocOptions,
+		private template: string,
 	){}
 
 	setup(): Promise<void> {
