@@ -117,7 +117,9 @@ export class RedocModule {
 						},
 						favicon: isString(options?.favicon) || isBuffer(options?.favicon),
 						redocVersion: options?.redocVersion,
-						options: options || {},
+						options: Object.assign(options || {}, {
+							expandResponses: Array.isArray(options?.expandResponses) ? options.expandResponses.join(',') : options?.expandResponses,
+						}),
 						theme: options?.theme || {}
 					}
 				};
