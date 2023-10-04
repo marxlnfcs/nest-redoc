@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "generate-index": "rimraf ./src/index.ts && barrelsby --config ./barrelsby.config.json",
-    "start": "npm run clean && nest start --watch",
+    "start": "npm run clean && nest start --watch --config ./nest-cli.tests.json",
     "build": "npm run generate-index && npm run clean && tsc && node scripts/build-package.js",
     "publish": "npm run build && cd dist && npm publish --access public"
   },
@@ -40,6 +40,7 @@
     "@nestjs/platform-express": "^10.2.6",
     "@nestjs/platform-fastify": "^10.2.6",
     "@nestjs/swagger": "^7.1.12",
+    "express-basic-auth": "^1.2.1",
     "express-handlebars": "^7.1.2",
     "handlebars": "^4.7.8",
     "joi": "^17.10.2"

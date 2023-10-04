@@ -2,6 +2,7 @@ import {RedocDocument} from "../interfaces/redoc-document.interface";
 import {RedocOptions} from "../interfaces/redoc-options.interface";
 import {NestFastifyApplication} from "@nestjs/platform-fastify";
 
+/** @internal */
 export class RedocFastifyAdapter {
 	constructor(
 		private path: string,

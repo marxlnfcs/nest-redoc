@@ -1,4 +1,5 @@
-export const HANDLEBARS_PARTIALS_STYLES = `
+/** @internal */
+export const HANDLEBARS_STYLES = `
     <!-- Base styles -->
     <style>
         body {

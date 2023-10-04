@@ -2,8 +2,8 @@ import {HttpServer, INestApplication} from "@nestjs/common";
 import {RedocDocument} from "./interfaces/redoc-document.interface";
 import {RedocOptions} from "./interfaces/redoc-options.interface";
 import {RedocOptionsSchema} from "./schema/redoc-options.schema";
-import {isBuffer, isString, normalizeUrl} from "./redoc.utils";
-import {REDOC_ASSETS} from "./redoc.constants";
+import {DeepPartial, deleteKey, isBuffer, isString, joinUrl, normalizeUrl} from "./redoc.utils";
+import {REDOC_URLS} from "./redoc.constants";
 import {RedocFastifyAdapter} from "./adapters/redoc-fastify.adapter";
 import {NestFastifyApplication} from "@nestjs/platform-fastify";
 import {DocumentBuilder, OpenAPIObject, SwaggerModule} from "@nestjs/swagger";
@@ -11,9 +11,9 @@ import {RedocExpressAdapter} from "./adapters/redoc-express.adapter";
 import {NestExpressApplication} from "@nestjs/platform-express";
 import {SwaggerDocumentOptions} from "@nestjs/swagger/dist/interfaces";
 import {create as createHandlebars} from 'express-handlebars';
-import {join} from "path";
 import {HANDLEBARS_MAIN} from "./views/main.handlebars";
-import {template} from "handlebars";
+import {HANDLEBARS_SCRIPTS} from "./views/scripts.handlebars";
+import {HANDLEBARS_STYLES} from "./views/styles.handlebars";
 
 export class RedocModule {
 
@@ -24,7 +24,7 @@ export class RedocModule {
 	 * @param document - RedocDocument
 	 * @param options - RedocOptions
 	 */
-	public static setup(path: string, app: INestApplication, document: OpenAPIObject, options?: Partial<RedocOptions>): Promise<void> {
+	public static setup(path: string, app: INestApplication, document: OpenAPIObject, options?: DeepPartial<RedocOptions>): Promise<void> {
 		return new Promise<void>(async (resolve, reject) => {
 			try{
 
@@ -38,7 +38,7 @@ export class RedocModule {
 				const redocDocument = this.buildDocument(redocPath, document, options);
 
 				// render template
-				const redocTemplate = await this.renderHandlebars(redocOptions);
+				const redocTemplate = await this.renderHandlebars(redocPath, redocOptions);
 
 				// get http adapter
 				const httpAdapter: HttpServer = app.getHttpAdapter();
@@ -72,11 +72,11 @@ export class RedocModule {
 	/**
 	 * Builds the document with all vendor extensions
 	 */
-	private static buildDocument(path: string, document: OpenAPIObject, options: Partial<RedocOptions>): RedocDocument {
+	private static buildDocument(path: string, document: OpenAPIObject, options: DeepPartial<RedocOptions>): RedocDocument {
 		return Object.assign(document || {}, {
 			info: Object.assign(document?.info || {}, {
 				'x-logo': {
-					url: isString(options?.logo?.url) ? options.logo.url : isBuffer(options?.logo?.url) ? REDOC_ASSETS.LOGO : null,
+					url: isString(options?.logo?.url) ? options.logo.url : isBuffer(options?.logo?.url) ? joinUrl(path, REDOC_URLS.LOGO) : null,
 					backgroundColor: options?.logo?.backgroundColor,
 					altText: options?.logo?.altText,
 					href: options?.logo?.href || `/${path}`,
@@ -89,7 +89,7 @@ export class RedocModule {
 	/**
 	 * Validate the redoc options
 	 */
-	private static validateOptions(options: Partial<RedocOptions>, document: OpenAPIObject): Promise<RedocOptions> {
+	private static validateOptions(options: DeepPartial<RedocOptions>, document: OpenAPIObject): Promise<RedocOptions> {
 		return new Promise<RedocOptions>(async (resolve, reject) => {
 			try{
 				resolve(await RedocOptionsSchema(document).validateAsync(options) as any);
@@ -102,35 +102,56 @@ export class RedocModule {
 	/**
 	 * Create and returns the initialized handlebars engine
 	 */
-	private static renderHandlebars(options: RedocOptions): Promise<string> {
+	private static renderHandlebars(path: string, options: RedocOptions): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try{
 
 				// create render data
 				const renderData: any = {
-					data: Object.assign(options, {
+					data: {
+						title: options?.title,
+						urls: {
+							logo: joinUrl(path, REDOC_URLS.LOGO),
+							favicon: joinUrl(path, REDOC_URLS.FAVICON),
+							definitions: joinUrl(path, REDOC_URLS.DEFINITIONS),
+						},
 						favicon: isString(options?.favicon) || isBuffer(options?.favicon),
-						logo: isString(options?.logo?.url) || isBuffer(options?.logo?.url),
-					}),
-					partials: {
-
+						redocVersion: options?.redocVersion,
+						options: options || {},
+						theme: options?.theme || {}
 					}
 				};
 
-				// create handlebars engine
-				const engine = createHandlebars({
-					helpers: {
-						include: async (template: Function) => await template(renderData),
-						toB64Json: (data: any) => Buffer.from(JSON.stringify(data)).toString('base64'),
-					}
-				});
+				// create options as base64 string
+				renderData.data.optionsB64Json = Buffer.from(JSON.stringify({ ...renderData.data.options, ...renderData.data.theme })).toString('base64');
+
+				// add components
+				renderData.data.components = {
+					styles: this.compileHandlebarTemplate(HANDLEBARS_STYLES)(renderData),
+					scripts: this.compileHandlebarTemplate(HANDLEBARS_SCRIPTS)(renderData),
+				};
+
+				// cleanup unused or sensitive data from renderData
+				deleteKey(renderData.data, [
+					'logo', 'tagGroups', 'auth',
+				]);
 
 				// render html
-				resolve(engine.handlebars.compile(HANDLEBARS_MAIN, {})(renderData));
+				resolve(this.compileHandlebarTemplate(HANDLEBARS_MAIN)(renderData));
 
 			}catch(e){
 				reject(e);
 			}
+		});
+	}
+
+	/**
+	 * Create handlebars template
+	 */
+	private static compileHandlebarTemplate(templateString: string) {
+		return createHandlebars().handlebars.compile(templateString, {
+			noEscape: true,
+			preventIndent: false,
 		});
 	}
 

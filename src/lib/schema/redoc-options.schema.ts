@@ -4,6 +4,7 @@ import {ObjectSchema} from 'joi';
 import {RedocLogoOptions, RedocOptions} from "../interfaces/redoc-options.interface";
 import {RedocTheme} from "../interfaces/redoc-theme.interface";
 
+/** @internal */
 export function RedocOptionsSchema(document: OpenAPIObject): ObjectSchema<RedocOptions> {
 	return joi.object<RedocOptions>().keys({
 		redocVersion: joi.string().default('latest'),
@@ -12,8 +13,8 @@ export function RedocOptionsSchema(document: OpenAPIObject): ObjectSchema<RedocO
 		logo: joi.object<RedocLogoOptions>({
 			url: joi.custom(value => typeof value === 'string' ? joi.string().uri() : Buffer.isBuffer(value) ? value : new Error('Only URL or Buffer allowed')).optional(),
 			backgroundColor: joi.string().regex(new RegExp('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')).optional(),
-			altText: joi.string().optional(),
-			href: joi.string().optional().uri(),
+			altText: joi.string().optional().default(document?.info?.title || 'Swagger documentation'),
+			href: joi.string().optional().uri().default('#'),
 		}),
 		theme: joi.any<RedocTheme>(),
 		disableSearch: joi.boolean().optional().default(false),
@@ -49,7 +50,17 @@ export function RedocOptionsSchema(document: OpenAPIObject): ObjectSchema<RedocO
 		sortPropsAlphabetically: joi.boolean().optional().default(false),
 		sortTagsAlphabetically: joi.boolean().optional().default(false),
 		untrustedDefinition: joi.boolean().optional().default(false),
-		disableAutoAuthorization: joi.boolean().optional().default(false),
+		noAutoAuth: joi.boolean().optional().default(false),
+		suppressWarnings: joi.boolean().optional().default(false),
+		auth: joi.object({
+			enabled: joi.boolean().optional().default(false),
+			users: joi.array().optional().items(
+				joi.object({
+					username: joi.string(),
+					password: joi.string(),
+				})
+			)
+		}).optional(),
 		tagGroups: joi.array().optional().items(
 			joi.object({
 				name: joi.string(),

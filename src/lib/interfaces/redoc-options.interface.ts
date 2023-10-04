@@ -305,12 +305,22 @@ export interface RedocOptions {
 	 *
 	 * @default false
 	 */
-	disableAutoAuthorization: boolean;
+	noAutoAuth: boolean;
+
+	/**
+	 * Suppress warnings
+	 */
+	suppressWarnings: boolean;
+
+	/**
+	 * Defines one or multiple users that have access to the frontend
+	 */
+	auth: RedocAuthOptions;
 
 	/**
 	 * Defines the tagGroups
 	 */
-	tagGroups: RedocTagGroupOptions;
+	tagGroups: RedocTagGroupOptions[];
 
 }
 
@@ -350,5 +360,20 @@ export interface RedocTagGroupOptions {
 	 * All tags that are assigned to this tagGroup
 	 */
 	tags: string[];
+
+}
+
+export interface RedocAuthOptions {
+
+	/**
+	 * Enables the authentication for the frontend
+	 * @default false
+	 */
+	enabled: boolean;
+
+	/**
+	 * Array of usernames and passwords
+	 */
+	users: Array<{ username: string, password: string }>;
 
 }
