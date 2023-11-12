@@ -80,8 +80,15 @@ export class RedocExpressAdapter {
 		});
 	}
 
-	private url(...parts: string[]) {
-		return '/' + joinUrl(this.path, ...parts);
+	private get globalPrefix(): string | null {
+		return this.app?.['container']?.['_applicationConfig']?.['globalPrefix'] || null;
+	}
+
+	private url(...parts: (string|null)[]) {
+		return '/' + joinUrl(
+			(!this.options?.useGlobalPrefix && this.globalPrefix) ? null : this.globalPrefix,
+			this.path, ...parts,
+		);
 	}
 
 }

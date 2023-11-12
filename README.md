@@ -380,6 +380,11 @@ noAutoAuth: boolean;
 suppressWarnings: boolean;
 
 /**
+ * Use the global prefix that is set via `app.setGlobalPrefix(...)`
+ */
+useGlobalPrefix: boolean;
+
+/**
  * Defines one or multiple users that have access to the frontend
  */
 auth: {

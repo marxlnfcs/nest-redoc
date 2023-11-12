@@ -7,8 +7,8 @@ export type DeepPartial<T> = T extends object ? {
 } : T;
 
 /** @internal */
-export function joinUrl(...parts: string[]): string {
-	return parts.map(p => normalizeUrl(p)).join('/');
+export function joinUrl(...parts: (string|null)[]): string {
+	return parts.filter(p => !!p?.trim()).map(p => normalizeUrl(p.trim())).join('/');
 }
 
 /** @internal */

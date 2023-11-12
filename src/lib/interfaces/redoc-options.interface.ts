@@ -313,6 +313,11 @@ export interface RedocOptions {
 	suppressWarnings: boolean;
 
 	/**
+	 * Add global prefix to docs path
+	 */
+	useGlobalPrefix: boolean;
+
+	/**
 	 * Defines one or multiple users that have access to the frontend
 	 */
 	auth: RedocAuthOptions;

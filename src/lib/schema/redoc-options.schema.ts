@@ -52,6 +52,7 @@ export function RedocOptionsSchema(document: OpenAPIObject): ObjectSchema<RedocO
 		untrustedDefinition: joi.boolean().optional().default(false),
 		noAutoAuth: joi.boolean().optional().default(false),
 		suppressWarnings: joi.boolean().optional().default(false),
+		useGlobalPrefix: joi.boolean().optional().default(false),
 		auth: joi.object({
 			enabled: joi.boolean().optional().default(false),
 			users: joi.array().optional().items(

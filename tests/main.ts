@@ -7,6 +7,8 @@ async function bootstrap() {
     // create app
     const app = await NestFactory.create(AppModule);
 
+    app.setGlobalPrefix('/api');
+
     // create document builder
     const config = RedocModule.createDocumentBuilder();
 
@@ -14,7 +16,7 @@ async function bootstrap() {
     const document = RedocModule.createDocument(app, config.build());
 
     // setup redoc
-    await RedocModule.setup('api', app, document, {
+    await RedocModule.setup('/docs', app, document, {
         theme: {
             sidebar: {
                 backgroundColor: '#000000',
@@ -23,11 +25,8 @@ async function bootstrap() {
         },
         auth: {
             enabled: true,
-            users: [
-                { username: 'user1', password: 'pass1' },
-                { username: 'user2', password: 'pass2' },
-            ]
-        }
+        },
+        useGlobalPrefix: true,
     });
 
     // listen to port 3001
