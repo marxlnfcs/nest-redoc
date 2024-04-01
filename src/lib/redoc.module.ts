@@ -35,7 +35,7 @@ export class RedocModule {
 				const redocOptions = await this.validateOptions(options || {}, document);
 
 				// build the redoc document
-				const redocDocument = this.buildDocument(redocPath, document, options);
+				const redocDocument = this.buildDocument(redocPath, document, redocOptions);
 
 				// render template
 				const redocTemplate = await this.renderHandlebars(redocPath, redocOptions);

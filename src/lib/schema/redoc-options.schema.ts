@@ -9,9 +9,9 @@ export function RedocOptionsSchema(document: OpenAPIObject): ObjectSchema<RedocO
 	return joi.object<RedocOptions>().keys({
 		redocVersion: joi.string().default('latest'),
 		title: joi.string().optional().default(document?.info?.title || 'Swagger documentation'),
-		favicon: joi.custom(value => typeof value === 'string' ? joi.string().uri() : Buffer.isBuffer(value) ? value : new Error('Only URL or Buffer allowed')).optional(),
+		favicon: joi.custom(value => typeof value === 'string' ? value : Buffer.isBuffer(value) ? value : new Error('Only URL or Buffer allowed')).optional(),
 		logo: joi.object<RedocLogoOptions>({
-			url: joi.custom(value => typeof value === 'string' ? joi.string().uri() : Buffer.isBuffer(value) ? value : new Error('Only URL or Buffer allowed')).optional(),
+			url: joi.custom(value => typeof value === 'string' ? value : Buffer.isBuffer(value) ? value : new Error('Only URL or Buffer allowed')).optional(),
 			backgroundColor: joi.string().regex(new RegExp('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')).optional(),
 			altText: joi.string().optional().default(document?.info?.title || 'Swagger documentation'),
 			href: joi.string().optional().uri().default('#'),
